@@ -222,8 +222,8 @@ public OnPlayerEnterDynamicArea( playerid, areaid ){
 public plgs_OnPlayerEnterDynamicArea( playerid, areaid ){
 	for( new i = 1; i != MAX_POLYGONS + 1; i++){
  		if( polygons[ i ] == areaid ){
-   			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
-      		break;
+			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
+			break;
    		}
 	}
 	return true;
@@ -248,11 +248,11 @@ public OnPlayerLeaveDynamicArea( playerid, areaid ){
 #endif
 
 public plgs_OnPlayerLeaveDynamicArea( playerid, areaid ){
-    for( new i = 1; i != MAX_POLYGONS + 1; i++){
-	    if( polygons[ i ] == areaid ){
+	for( new i = 1; i != MAX_POLYGONS + 1; i++){
+	if( polygons[ i ] == areaid ){
 			CallLocalFunction("OnPlayerLeavePolygon", "ii", playerid, i );
-	        break;
-	    }
+			break;
+		}
 	}
 	return true;
 }
