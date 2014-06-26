@@ -15,7 +15,7 @@
 			
 	Callback's:
 	    	OnPlayerEnterPolygon( playerid, polygonid )
-		OnPlayerEnterPolygon( playerid, polygonid )
+		OnPlayerLeavePolygon( playerid, polygonid )
 */
 
 #define MAX_POLYGONS 20
