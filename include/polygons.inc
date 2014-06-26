@@ -3,18 +3,18 @@
 /*
 
 	Function's:
-	    CreatePolygon( Float: area[ ], all_points = sizeof area )
-        DestroyPolygon( polygonid )
-        PolygonFlashForAll( polygonid, color = 0xFF0000AA )
-        PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA )
-        PolygonStopFlashForAll( polygonid )
-        PolygonStopFlashForPlayer( playerid, polygonid )
-        PolygonShowForAll( polygonid, color = 0xFFFFFFAA )
-        PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA )
-        CountGangZones()
+	    	CreatePolygon( Float: area[ ], all_points = sizeof area )
+        	DestroyPolygon( polygonid )
+	        PolygonFlashForAll( polygonid, color = 0xFF0000AA )
+	        PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA )
+	        PolygonStopFlashForAll( polygonid )
+	        PolygonStopFlashForPlayer( playerid, polygonid )
+	        PolygonShowForAll( polygonid, color = 0xFFFFFFAA )
+	        PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA )
+	        CountGangZones()
 			
 	Callback's:
-	    OnPlayerEnterPolygon( playerid, polygonid )
+	    	OnPlayerEnterPolygon( playerid, polygonid )
 		OnPlayerEnterPolygon( playerid, polygonid )
 */
 
@@ -40,12 +40,12 @@ forward OnPlayerEnterPolygon( playerid, polygonid );
 forward OnPlayerLeavePolygon( playerid, polygonid );
 
 stock plgs_GangZoneCreate(Float:minx, Float:miny, Float:maxx, Float:maxy){
-    totalGangZones++;
+    	totalGangZones++;
 	return GangZoneCreate(minx, miny, maxx, maxy);
 }
 
 stock plgs_GangZoneDestroy(zone){
-    totalGangZones--;
+    	totalGangZones--;
 	GangZoneDestroy(zone);
 	return true;
 }
@@ -103,7 +103,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + 5.0, end_y + 5.0 );
 			//printf("Line created: From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
 			slot = i + 1;
-		    continue;
+		    	continue;
 		}
 
 		distance = floatround( VectorSize( end_x - start_x, end_y - start_y, 0.0 ) ) / 4;
@@ -140,7 +140,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 }
 
 stock PolygonFlashForAll( polygonid, color = 0xFF0000AA ){
-    if( polygonid == 0 ) return false;
+    	if( polygonid == 0 ) return false;
 
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
@@ -152,8 +152,8 @@ stock PolygonFlashForAll( polygonid, color = 0xFF0000AA ){
 }
 
 stock PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA ){
-    if( polygonid == 0 ) return false;
-    
+    	if( polygonid == 0 ) return false;
+    	
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
@@ -177,7 +177,7 @@ stock PolygonStopFlashForAll( polygonid ){
 
 
 stock PolygonStopFlashForPlayer( playerid, polygonid ){
-    if( polygonid == 0 ) return false;
+    	if( polygonid == 0 ) return false;
     
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
@@ -189,7 +189,7 @@ stock PolygonStopFlashForPlayer( playerid, polygonid ){
 }
 
 stock DestroyPolygon( polygonid ){
-    if( polygonid == 0 ) return false;
+    	if( polygonid == 0 ) return false;
     
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
@@ -207,7 +207,7 @@ stock DestroyPolygon( polygonid ){
 }
 
 stock PolygonShowForAll( polygonid, color = 0xFFFFFFAA ){
-    if( polygonid == 0 ) return false;
+    	if( polygonid == 0 ) return false;
 
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
@@ -256,7 +256,7 @@ public plgs_OnPlayerEnterDynamicArea( playerid, areaid ){
 	for( new i = 1; i != MAX_POLYGONS + 1; i++){
  		if( polygons[ i ] == areaid ){
    			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
-      		break;
+      			break;
    		}
 	}
 	return true;
@@ -279,10 +279,10 @@ public OnPlayerLeaveDynamicArea( playerid, areaid ){
 #endif
 
 public plgs_OnPlayerLeaveDynamicArea( playerid, areaid ){
-    for( new i = 1; i != MAX_POLYGONS + 1; i++){
+    	for( new i = 1; i != MAX_POLYGONS + 1; i++){
 	    if( polygons[ i ] == areaid ){
 			CallLocalFunction("OnPlayerLeavePolygon", "ii", playerid, i );
-	        break;
+	        	break;
 	    }
 	}
 	return true;
