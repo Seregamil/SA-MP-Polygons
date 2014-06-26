@@ -132,6 +132,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 
 	if( CountGangZones() >= MAX_GANGZONES ){
 		DestroyPolygon( i / 2 + 1 );
+		printf("Полигон %i был удален с сервера, т.к. достигнуто максимальное количество GZ ", i / 2 + 1);
   		return MAX_POLYGONS + 1;
 	}
 
