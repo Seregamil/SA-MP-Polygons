@@ -24,7 +24,11 @@
     #define MAX_GANGZONES 1024
 #endif
 
-new gangZones[ MAX_POLYGONS * 2 ] = { MAX_POLYGONS + 1, ... };// firts & last
+#if !defined INVALID_AREA_ID
+	#define INVALID_AREA_ID -1
+#endif
+
+new gangZones[ MAX_POLYGONS * 2 ] = { INVALID_AREA_ID, ... };// firts & last
 
 #if defined STREAMER_TYPE_AREA
 	new polygons[ MAX_POLYGONS ] = { MAX_POLYGONS + 1, ... };
@@ -32,12 +36,15 @@ new gangZones[ MAX_POLYGONS * 2 ] = { MAX_POLYGONS + 1, ... };// firts & last
 
 new totalGangZones = 0;
 
-stock hook_GangZoneCreate(Float:minx, Float:miny, Float:maxx, Float:maxy){
+forward OnPlayerEnterPolygon( playerid, polygonid );
+forward OnPlayerLeavePolygon( playerid, polygonid );
+
+stock plgs_GangZoneCreate(Float:minx, Float:miny, Float:maxx, Float:maxy){
     totalGangZones++;
 	return GangZoneCreate(minx, miny, maxx, maxy);
 }
 
-stock hook_GangZoneDestroy(zone){
+stock plgs_GangZoneDestroy(zone){
     totalGangZones--;
 	GangZoneDestroy(zone);
 	return true;
@@ -49,7 +56,7 @@ stock hook_GangZoneDestroy(zone){
     #define _ALS_GangZoneCreate
 #endif
 
-#define GangZoneCreate hook_GangZoneCreate
+#define GangZoneCreate plgs_GangZoneCreate
 
 #if defined _ALS_GangZoneDestroy
     #undef GangZoneDestroy
@@ -57,33 +64,47 @@ stock hook_GangZoneDestroy(zone){
     #define _ALS_GangZoneDestroy
 #endif
 
-#define GangZoneDestroy hook_GangZoneDestroy
+#define GangZoneDestroy plgs_GangZoneDestroy
 
 stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 	if( CountGangZones() >= MAX_GANGZONES )
 	    return MAX_POLYGONS + 1;
-	    
+
 	new i = -1;
 	new g_zones = sizeof gangZones;
 	while( ++i < g_zones )
-	    if( gangZones[ i ] == MAX_POLYGONS + 1 )
+	    if( gangZones[ i ] == INVALID_AREA_ID )
 	        break;
-	
+
 	if( i == g_zones )
 	    return MAX_POLYGONS + 1;
-	
+
 	new
 		Float: start_x, Float: start_y,
 		Float: end_x, Float: end_y,
 		Float: draw_x, Float: draw_y,
 		distance, slot = i;
 
-	for( new points = -1, j = all_points ; ++points != j ; ){
+
+	for( new points = -1, j = all_points ; ++points < j ; ){
 
 		start_x = area[ points ];
 		start_y = area[ points + 1 ];
+
 		end_x = area[ points + 2 ];
 		end_y = area[ ++points + 2 ];
+		
+		//printf( "From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
+		
+		if( points + 1 == j )
+		    break;
+		
+		if( start_x == end_x || start_y == end_y ){
+			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + 5.0, end_y + 5.0 );
+			//printf("Line created: From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
+			slot = i + 1;
+		    continue;
+		}
 
 		distance = floatround( VectorSize( end_x - start_x, end_y - start_y, 0.0 ) ) / 4;
 
@@ -94,19 +115,19 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 			start_x += draw_x;
 			start_y += draw_y;
 
-			gangZones[ slot ] = GangZoneCreate( start_x, start_y, start_x + 5.0, start_y + 5.0 );
-
-            if( slot == i )
+			if( gangZones[ slot ] != INVALID_AREA_ID && slot == i )
 				slot = i + 1;
+
+   			gangZones[ slot ] = GangZoneCreate( start_x, start_y, start_x + 5.0, start_y + 5.0 );
 
 			if( CountGangZones() >= MAX_GANGZONES )
 			    break;
 		}
 		
-		if( end_y == area[ j - 1 ] || CountGangZones() >= MAX_GANGZONES )
+		if( CountGangZones() >= MAX_GANGZONES )
 			break;
 	}
-	
+
 	if( CountGangZones() >= MAX_GANGZONES ){
 		DestroyPolygon( i / 2 + 1 );
   		return MAX_POLYGONS + 1;
@@ -119,8 +140,10 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 }
 
 stock PolygonFlashForAll( polygonid, color = 0xFF0000AA ){
+    if( polygonid == 0 ) return false;
+
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
@@ -129,8 +152,10 @@ stock PolygonFlashForAll( polygonid, color = 0xFF0000AA ){
 }
 
 stock PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA ){
+    if( polygonid == 0 ) return false;
+    
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
@@ -139,8 +164,10 @@ stock PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA ){
 }
 
 stock PolygonStopFlashForAll( polygonid ){
+	if( polygonid == 0 ) return false;
+	
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
@@ -150,8 +177,10 @@ stock PolygonStopFlashForAll( polygonid ){
 
 
 stock PolygonStopFlashForPlayer( playerid, polygonid ){
+    if( polygonid == 0 ) return false;
+    
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
@@ -160,15 +189,17 @@ stock PolygonStopFlashForPlayer( playerid, polygonid ){
 }
 
 stock DestroyPolygon( polygonid ){
+    if( polygonid == 0 ) return false;
+    
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 	    
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
 	    GangZoneDestroy( i );
 	    
-	gangZones[ slotid ] = MAX_POLYGONS + 1;
-	gangZones[ slotid + 1 ] = MAX_POLYGONS + 1;
+	gangZones[ slotid ] = INVALID_AREA_ID;
+	gangZones[ slotid + 1 ] = INVALID_AREA_ID;
 	#if defined STREAMER_TYPE_AREA
 	    DestroyDynamicArea( polygons[ slotid ] );
 	#endif
@@ -176,8 +207,10 @@ stock DestroyPolygon( polygonid ){
 }
 
 stock PolygonShowForAll( polygonid, color = 0xFFFFFFAA ){
+    if( polygonid == 0 ) return false;
+
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
 
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
@@ -186,10 +219,12 @@ stock PolygonShowForAll( polygonid, color = 0xFFFFFFAA ){
 }
 
 stock PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA ){
+	if( polygonid == 0 ) return false;
+	
 	new slotid = polygonid * 2 - 2;
-	if( gangZones[ slotid ] == MAX_POLYGONS + 1 )
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
-
+	//printf( "Polygon: %i, Slot: %i; First: %i, Last: %i ;", polygonid, slotid, gangZones[ slotid ], gangZones[ slotid + 1 ] + 1 );
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
  		GangZoneShowForPlayer( playerid, i, color );
  	return true;
@@ -199,8 +234,6 @@ stock CountGangZones()
 	return totalGangZones;
 	
 #if defined STREAMER_TYPE_AREA
-
-forward OnPlayerEnterPolygon( playerid, polygonid );
 
 public OnPlayerEnterDynamicArea( playerid, areaid ){
     #if defined plgs_OnPlayerEnterDynamicArea
@@ -222,14 +255,12 @@ public OnPlayerEnterDynamicArea( playerid, areaid ){
 public plgs_OnPlayerEnterDynamicArea( playerid, areaid ){
 	for( new i = 1; i != MAX_POLYGONS + 1; i++){
  		if( polygons[ i ] == areaid ){
-			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
-			break;
+   			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
+      		break;
    		}
 	}
 	return true;
 }
-
-forward OnPlayerLeavePolygon( playerid, polygonid );
 
 public OnPlayerLeaveDynamicArea( playerid, areaid ){
     #if defined plgs_OnPlayerLeaveDynamicArea
@@ -248,11 +279,11 @@ public OnPlayerLeaveDynamicArea( playerid, areaid ){
 #endif
 
 public plgs_OnPlayerLeaveDynamicArea( playerid, areaid ){
-	for( new i = 1; i != MAX_POLYGONS + 1; i++){
-	if( polygons[ i ] == areaid ){
+    for( new i = 1; i != MAX_POLYGONS + 1; i++){
+	    if( polygons[ i ] == areaid ){
 			CallLocalFunction("OnPlayerLeavePolygon", "ii", playerid, i );
-			break;
-		}
+	        break;
+	    }
 	}
 	return true;
 }
