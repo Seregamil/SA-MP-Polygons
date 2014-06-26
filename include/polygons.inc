@@ -100,7 +100,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 		    break;
 		
 		if( start_x == end_x || start_y == end_y ){
-			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + 5.0, end_y + 5.0 );
+			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + ( start_x == end_x ? 5.0 : 0.0 ), end_y + ( start_x == end_x ? 0.0 : 5.0 ) );
 			//printf("Line created: From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
 			slot = i + 1;
 		    	continue;
