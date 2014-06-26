@@ -11,8 +11,10 @@
 	        PolygonStopFlashForPlayer( playerid, polygonid )
 	        PolygonShowForAll( polygonid, color = 0xFFFFFFAA )
 	        PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA )
+	        PolygonHideForAll( playerid, polygonid )
+        	PolygonHideForPlayer( playerid, polygonid )
 	        CountGangZones()
-			
+
 	Callback's:
 	    	OnPlayerEnterPolygon( playerid, polygonid )
 		OnPlayerLeavePolygon( playerid, polygonid )
@@ -227,6 +229,30 @@ stock PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA ){
 	//printf( "Polygon: %i, Slot: %i; First: %i, Last: %i ;", polygonid, slotid, gangZones[ slotid ], gangZones[ slotid + 1 ] + 1 );
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
  		GangZoneShowForPlayer( playerid, i, color );
+ 	return true;
+}
+
+stock PolygonHideForAll( polygonid ){
+    if( polygonid == 0 ) return false;
+
+	new slotid = polygonid * 2 - 2;
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
+	    return false;
+
+	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
+ 		GangZoneHideForAll( i );
+ 	return true;
+}
+
+stock PolygonHideForPlayer( playerid, polygonid ){
+	if( polygonid == 0 ) return false;
+
+	new slotid = polygonid * 2 - 2;
+	if( gangZones[ slotid ] == INVALID_AREA_ID )
+	    return false;
+	//printf( "Polygon: %i, Slot: %i; First: %i, Last: %i ;", polygonid, slotid, gangZones[ slotid ], gangZones[ slotid + 1 ] + 1 );
+	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
+ 		GangZoneHideForPlayer( playerid, i );
  	return true;
 }
 
