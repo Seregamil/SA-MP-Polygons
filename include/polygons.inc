@@ -16,7 +16,7 @@
 	        CountGangZones()
 
 	Callback's:
-	    	OnPlayerEnterPolygon( playerid, polygonid )
+	    OnPlayerEnterPolygon( playerid, polygonid )
 		OnPlayerLeavePolygon( playerid, polygonid )
 */
 
@@ -42,14 +42,13 @@ forward OnPlayerEnterPolygon( playerid, polygonid );
 forward OnPlayerLeavePolygon( playerid, polygonid );
 
 stock plgs_GangZoneCreate(Float:minx, Float:miny, Float:maxx, Float:maxy){
-    	totalGangZones++;
+	totalGangZones++;
 	return GangZoneCreate(minx, miny, maxx, maxy);
 }
 
 stock plgs_GangZoneDestroy(zone){
-    	totalGangZones--;
-	GangZoneDestroy(zone);
-	return true;
+	totalGangZones--;
+	return GangZoneDestroy(zone);
 }
 
 #if defined _ALS_GangZoneCreate
@@ -95,17 +94,17 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 
 		end_x = area[ points + 2 ];
 		end_y = area[ ++points + 2 ];
-		
-		//printf( "From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
-		
+
 		if( points + 1 == j )
-		    break;
-		
+		{
+			end_x = area[ 0 ];
+			end_y = area[ 1 ];
+		}
+
 		if( start_x == end_x || start_y == end_y ){
 			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + ( start_x == end_x ? 5.0 : 0.0 ), end_y + ( start_x == end_x ? 0.0 : 5.0 ) );
-			//printf("Line created: From: %f, %f; To: %f, %f;", start_x, start_y, end_x, end_y );
 			slot = i + 1;
-		    	continue;
+		    continue;
 		}
 
 		distance = floatround( VectorSize( end_x - start_x, end_y - start_y, 0.0 ) ) / 4;
@@ -125,7 +124,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 			if( CountGangZones() >= MAX_GANGZONES )
 			    break;
 		}
-		
+
 		if( CountGangZones() >= MAX_GANGZONES )
 			break;
 	}
@@ -155,8 +154,8 @@ stock PolygonFlashForAll( polygonid, color = 0xFF0000AA ){
 }
 
 stock PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA ){
-    	if( polygonid == 0 ) return false;
-    	
+    if( polygonid == 0 ) return false;
+
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
@@ -168,7 +167,7 @@ stock PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA ){
 
 stock PolygonStopFlashForAll( polygonid ){
 	if( polygonid == 0 ) return false;
-	
+
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
@@ -180,8 +179,8 @@ stock PolygonStopFlashForAll( polygonid ){
 
 
 stock PolygonStopFlashForPlayer( playerid, polygonid ){
-    	if( polygonid == 0 ) return false;
-    
+    if( polygonid == 0 ) return false;
+
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
@@ -192,15 +191,15 @@ stock PolygonStopFlashForPlayer( playerid, polygonid ){
 }
 
 stock DestroyPolygon( polygonid ){
-    	if( polygonid == 0 ) return false;
-    
+	if( polygonid == 0 ) return false;
+
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
-	    
+
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
 	    GangZoneDestroy( i );
-	    
+
 	gangZones[ slotid ] = INVALID_AREA_ID;
 	gangZones[ slotid + 1 ] = INVALID_AREA_ID;
 	#if defined STREAMER_TYPE_AREA
@@ -210,7 +209,7 @@ stock DestroyPolygon( polygonid ){
 }
 
 stock PolygonShowForAll( polygonid, color = 0xFFFFFFAA ){
-    	if( polygonid == 0 ) return false;
+	if( polygonid == 0 ) return false;
 
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
@@ -223,11 +222,11 @@ stock PolygonShowForAll( polygonid, color = 0xFFFFFFAA ){
 
 stock PolygonShowForPlayer( playerid, polygonid, color = 0xFFFFFFAA ){
 	if( polygonid == 0 ) return false;
-	
+
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
-	//printf( "Polygon: %i, Slot: %i; First: %i, Last: %i ;", polygonid, slotid, gangZones[ slotid ], gangZones[ slotid + 1 ] + 1 );
+
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
  		GangZoneShowForPlayer( playerid, i, color );
  	return true;
@@ -251,7 +250,7 @@ stock PolygonHideForPlayer( playerid, polygonid ){
 	new slotid = polygonid * 2 - 2;
 	if( gangZones[ slotid ] == INVALID_AREA_ID )
 	    return false;
-	//printf( "Polygon: %i, Slot: %i; First: %i, Last: %i ;", polygonid, slotid, gangZones[ slotid ], gangZones[ slotid + 1 ] + 1 );
+
 	for( new i = gangZones[ slotid ], j = gangZones[ slotid + 1 ] + 1; i != j; i++ )
  		GangZoneHideForPlayer( playerid, i );
  	return true;
@@ -259,59 +258,48 @@ stock PolygonHideForPlayer( playerid, polygonid ){
 
 stock CountGangZones()
 	return totalGangZones;
-	
+
 #if defined STREAMER_TYPE_AREA
-
-public OnPlayerEnterDynamicArea( playerid, areaid ){
-    #if defined plgs_OnPlayerEnterDynamicArea
-		plgs_OnPlayerEnterDynamicArea( playerid, areaid );
-    #endif
-    return 1;
-}
-
-#if defined _ALS_OnPlayerEnterDynamicArea
-    #undef OnPlayerEnterDynamicArea
-#else
-    #define _ALS_OnPlayerEnterDynamicArea
-#endif
-#define OnPlayerEnterDynamicArea plgs_OnPlayerEnterDynamicArea
-#if defined plgs_OnPlayerEnterDynamicArea
-    forward plgs_OnPlayerEnterDynamicArea( playerid, areaid );
-#endif
-
-public plgs_OnPlayerEnterDynamicArea( playerid, areaid ){
-	for( new i = 1; i != MAX_POLYGONS + 1; i++){
- 		if( polygons[ i ] == areaid ){
-   			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
-      			break;
-   		}
+	public OnPlayerEnterDynamicArea( playerid, areaid ){
+		for( new i = 1; i != MAX_POLYGONS + 1; i++){
+	 		if( polygons[ i ] == areaid ){
+	   			CallLocalFunction("OnPlayerEnterPolygon", "ii", playerid, i );
+	      		break;
+	   		}
+		}
+		#if defined plgs_OnPlayerEnterDynamicArea
+			return plgs_OnPlayerEnterDynamicArea( playerid, areaid );
+	    #endif
 	}
-	return true;
-}
 
-public OnPlayerLeaveDynamicArea( playerid, areaid ){
-    #if defined plgs_OnPlayerLeaveDynamicArea
-    	plgs_OnPlayerLeaveDynamicArea( playerid, areaid );
-    #endif
-    return 1;
-}
-#if defined _ALS_OnPlayerLeaveDynamicArea
-    #undef OnPlayerLeaveDynamicArea
-#else
-    #define _ALS_OnPlayerLeaveDynamicArea
-#endif
-#define OnPlayerLeaveDynamicArea plgs_OnPlayerLeaveDynamicArea
-#if defined plgs_OnPlayerLeaveDynamicArea
-    forward plgs_OnPlayerLeaveDynamicArea( playerid, areaid );
-#endif
+	#if defined _ALS_OnPlayerEnterDynamicArea
+	    #undef OnPlayerEnterDynamicArea
+	#else
+	    #define _ALS_OnPlayerEnterDynamicArea
+	#endif
+	#define OnPlayerEnterDynamicArea plgs_OnPlayerEnterDynamicArea
+	#if defined plgs_OnPlayerEnterDynamicArea
+	    forward plgs_OnPlayerEnterDynamicArea( playerid, areaid );
+	#endif
 
-public plgs_OnPlayerLeaveDynamicArea( playerid, areaid ){
-    	for( new i = 1; i != MAX_POLYGONS + 1; i++){
-	    if( polygons[ i ] == areaid ){
-			CallLocalFunction("OnPlayerLeavePolygon", "ii", playerid, i );
-	        	break;
-	    }
+	public OnPlayerLeaveDynamicArea( playerid, areaid ){
+	    for( new i = 1; i != MAX_POLYGONS + 1; i++){
+		    if( polygons[ i ] == areaid ){
+				CallLocalFunction("OnPlayerLeavePolygon", "ii", playerid, i );
+		        break;
+		    }
+		}
+	    #if defined plgs_OnPlayerLeaveDynamicArea
+	    	return plgs_OnPlayerLeaveDynamicArea( playerid, areaid );
+	    #endif
 	}
-	return true;
-}
+	#if defined _ALS_OnPlayerLeaveDynamicArea
+	    #undef OnPlayerLeaveDynamicArea
+	#else
+	    #define _ALS_OnPlayerLeaveDynamicArea
+	#endif
+	#define OnPlayerLeaveDynamicArea plgs_OnPlayerLeaveDynamicArea
+	#if defined plgs_OnPlayerLeaveDynamicArea
+	    forward plgs_OnPlayerLeaveDynamicArea( playerid, areaid );
+	#endif
 #endif
