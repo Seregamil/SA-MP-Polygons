@@ -3,7 +3,7 @@
 /*
 
 	Function's:
-	    	CreatePolygon( Float: area[ ], all_points = sizeof area )
+	    	CreatePolygon( Float: area[ ], Float: polygon_size = 5.0, all_points = sizeof area )
         	DestroyPolygon( polygonid )
 	        PolygonFlashForAll( polygonid, color = 0xFF0000AA )
 	        PolygonFlashForPlayer( playerid, polygonid, color = 0xFF0000AA )
@@ -67,7 +67,7 @@ stock plgs_GangZoneDestroy(zone){
 
 #define GangZoneDestroy plgs_GangZoneDestroy
 
-stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
+stock CreatePolygon( Float: area[ ], Float: polygon_size = 5.0, all_points = sizeof area ){
 	if( CountGangZones() >= MAX_GANGZONES )
 	    return MAX_POLYGONS + 1;
 
@@ -102,15 +102,15 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 		}
 
 		if( start_x == end_x || start_y == end_y ){
-			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + ( start_x == end_x ? 5.0 : 0.0 ), end_y + ( start_x == end_x ? 0.0 : 5.0 ) );
+			gangZones[ slot ] = GangZoneCreate( start_x, start_y, end_x + ( start_x == end_x ? polygon_size : 0.0 ), end_y + ( start_x == end_x ? 0.0 : polygon_size ) );
 			slot = i + 1;
 		    continue;
 		}
 
-		distance = floatround( VectorSize( end_x - start_x, end_y - start_y, 0.0 ) ) / 4;
+		distance = floatround( VectorSize( end_x - start_x, end_y - start_y, 0.0 ) / polygon_size ) ;
 
-		draw_x = floatdiv( end_x - start_x, float( distance ));
-		draw_y = floatdiv( end_y - start_y, float( distance ));
+		draw_x = floatdiv( end_x - start_x, float( distance ) );
+		draw_y = floatdiv( end_y - start_y, float( distance ) );
 
 		while( distance-- ) {
 			start_x += draw_x;
@@ -119,7 +119,7 @@ stock CreatePolygon( Float: area[ ], all_points = sizeof area ){
 			if( gangZones[ slot ] != INVALID_AREA_ID && slot == i )
 				slot = i + 1;
 
-   			gangZones[ slot ] = GangZoneCreate( start_x, start_y, start_x + 5.0, start_y + 5.0 );
+   			gangZones[ slot ] = GangZoneCreate( start_x, start_y, start_x + polygon_size, start_y + polygon_size );
 
 			if( CountGangZones() >= MAX_GANGZONES )
 			    break;
